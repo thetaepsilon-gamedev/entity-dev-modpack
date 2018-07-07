@@ -67,31 +67,34 @@ The ordering of min/max relative to each other is NOT checked.
 The funcs table provides functions to sample the desired data at a given point,
 as well as to compose the desired resulting structure.
 ]]
-local sample_grind_points = function(bpos, cbox, funcs)
+local sample_grind_points = function(funcs)
 	local getnode = funcs.getnode
 	assert(type(getnode) == "function")
 	local mkface = funcs.mkface
 	assert(type(mkface) == "function")
 	local mkcube = funcs.mkcube
 	assert(type(mkcube) == "function")
-	local m, g = mkface, getnode
-	local s = function(...)
-		return sample_grind_face(m, g, ...)
+
+	return function(bpos, cbox)
+		local m, g = mkface, getnode
+		local s = function(...)
+			return sample_grind_face(m, g, ...)
+		end
+
+		local bx, by, bz = unwrap(bpos)
+		local c = cbox
+		local xmin, ymin, zmin = bx + c[1], by + c[2], bz + c[3]
+		local xmax, ymax, zmax = bx + c[4], by + c[5], bz + c[6]
+		local protrude
+
+		local sxmin = s("xmin", xmin - tiny, ymin, ymax, zmin, zmax)
+		local sxmax = s("xmax", xmax + tiny, ymin, ymax, zmin, zmax)
+		local symin = s("ymin", ymin - tiny, xmin, xmax, zmin, zmax)
+		local symax = s("ymax", ymax + tiny, xmin, xmax, zmin, zmax)
+		local szmin = s("zmin", zmin - tiny, xmin, xmax, ymin, ymax)
+		local szmax = s("zmax", zmax + tiny, xmin, xmax, ymin, ymax)
+		return mkcube(sxmin, sxmax, symin, symax, szmin, szmax)
 	end
-
-	local bx, by, bz = unwrap(bpos)
-	local c = cbox
-	local xmin, ymin, zmin = bx + c[1], by + c[2], bz + c[3]
-	local xmax, ymax, zmax = bx + c[4], by + c[5], bz + c[6]
-	local protrude
-
-	local sxmin = s("xmin", xmin - tiny, ymin, ymax, zmin, zmax)
-	local sxmax = s("xmax", xmax + tiny, ymin, ymax, zmin, zmax)
-	local symin = s("ymin", ymin - tiny, xmin, xmax, zmin, zmax)
-	local symax = s("ymax", ymax + tiny, xmin, xmax, zmin, zmax)
-	local szmin = s("zmin", zmin - tiny, xmin, xmax, ymin, ymax)
-	local szmax = s("zmax", zmax + tiny, xmin, xmax, ymin, ymax)
-	return mkcube(sxmin, sxmax, symin, symax, szmin, szmax)
 end
 
 return sample_grind_points
