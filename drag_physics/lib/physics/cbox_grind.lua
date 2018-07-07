@@ -21,6 +21,7 @@ we have to sample just beyond it to see the node that is presenting the barrier.
 We only sample at the corners of the cbox to cut down on getnode calls;
 this approximation may yield surprises on objects larger than two nodes.
 ]]
+local unwrap = mtrequire("ds2.minetest.vectorextras.unwrap")
 
 -- the offset value used to reach into the next block.
 -- should be small but not too small, so as to not cause rounding errors.
