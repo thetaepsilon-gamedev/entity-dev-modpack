@@ -94,7 +94,9 @@ local sample_grind_points = function(funcs)
 		local symax = s("ymax", ymax + tiny, xmin, xmax, zmin, zmax)
 		local szmin = s("zmin", zmin - tiny, xmin, xmax, ymin, ymax)
 		local szmax = s("zmax", zmax + tiny, xmin, xmax, ymin, ymax)
-		return mkcube(sxmin, sxmax, symin, symax, szmin, szmax)
+
+		-- preserve cbox-like ordering
+		return mkcube(sxmin, symin, szmin, sxmax, symax, szmax)
 	end
 end
 
