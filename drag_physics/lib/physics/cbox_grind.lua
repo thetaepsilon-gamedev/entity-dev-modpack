@@ -75,12 +75,12 @@ local sample_grind_points = function(funcs)
 	local mkcube = funcs.mkcube
 	assert(type(mkcube) == "function")
 
-	return function(bpos, cbox)
-		local m, g = mkface, getnode
-		local s = function(...)
-			return sample_grind_face(m, g, ...)
-		end
+	local m, g = mkface, getnode
+	local s = function(...)
+		return sample_grind_face(m, g, ...)
+	end
 
+	return function(bpos, cbox)
 		local bx, by, bz = unwrap(bpos)
 		local c = cbox
 		local xmin, ymin, zmin = bx + c[1], by + c[2], bz + c[3]
