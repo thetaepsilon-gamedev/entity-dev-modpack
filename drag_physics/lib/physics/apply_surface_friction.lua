@@ -38,14 +38,14 @@ local get_scales = function(props, dtime)
 	local ef = props.friction_surface or def_ef
 	local weight = props.weight or def_weight
 	local scale = dtime / weight
-	return ef, weight
+	return ef, scale
 end
 
 local i = {}
 -- entity friction and weighting are retrieved from an already retrieved properties table.
 -- returns the modified velocity after applying to the entity.
 local apply = function(dtime, entity, props, frictionf)
-	local ef, weight = get_scales(props, dtime)
+	local ef, scale = get_scales(props, dtime)
 	local vel = entity:get_velocity()
 	local friction = frictionf(entity:get_pos(), props.collisionbox)
 	push_towards_zero_mut(vel, friction, ef, scale)
