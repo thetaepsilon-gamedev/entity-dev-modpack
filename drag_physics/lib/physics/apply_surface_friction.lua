@@ -20,9 +20,11 @@ local sub = abs_subtract
 -- it doesn't have axes because to do so would have to consider friction etc.
 local push_towards_zero_mut = function(velocity, friction, ef, scale)
 	local v, f, s = velocity, friction, scale
-	local x = sub(v.x, (f.fx * ef) * s)
-	local y = sub(v.y, (f.fy * ef) * s)
-	local z = sub(v.z, (f.fz * ef) * s)
+	-- motion along each axis is slowed by friction on the other two.
+	-- e.g. Y-axis motion can be slowed by friction on the X and Z sides.
+	local x = sub(v.x, ((f.fy + f.fz) * ef) * s)
+	local y = sub(v.y, ((f.fx + f.fz) * ef) * s)
+	local z = sub(v.z, ((f.fx + f.fy) * ef) * s)
 	v.x = x
 	v.y = y
 	v.z = z
