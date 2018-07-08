@@ -88,12 +88,13 @@ local sample_grind_points = function(funcs)
 		local xmax, ymax, zmax = bx + c[4], by + c[5], bz + c[6]
 		local protrude
 
-		local sxmin = s("xmin", xmin - tiny, ymin, ymax, zmin, zmax)
-		local sxmax = s("xmax", xmax + tiny, ymin, ymax, zmin, zmax)
-		local symin = s("ymin", ymin - tiny, xmin, xmax, zmin, zmax)
-		local symax = s("ymax", ymax + tiny, xmin, xmax, zmin, zmax)
-		local szmin = s("zmin", zmin - tiny, xmin, xmax, ymin, ymax)
-		local szmax = s("zmax", zmax + tiny, xmin, xmax, ymin, ymax)
+		local t = tiny
+		local sxmin = s("xmin", xmin - t, ymin, ymax, zmin, zmax)
+		local sxmax = s("xmax", xmax + t, ymin, ymax, zmin, zmax)
+		local symin = s("ymin", ymin - t, xmin, xmax, zmin, zmax)
+		local symax = s("ymax", ymax + t, xmin, xmax, zmin, zmax)
+		local szmin = s("zmin", zmin - t, xmin, xmax, ymin, ymax)
+		local szmax = s("zmax", zmax + t, xmin, xmax, ymin, ymax)
 
 		-- preserve cbox-like ordering
 		return mkcube(sxmin, symin, szmin, sxmax, symax, szmax)
