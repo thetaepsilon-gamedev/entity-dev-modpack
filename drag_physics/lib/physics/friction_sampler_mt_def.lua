@@ -18,11 +18,16 @@ This function serves as documentation for how to specify friction in node defini
 ]]
 local default = 50
 local process_def = function(def)
-	-- for now, we just inspect the surface_friction property.
-	-- if this is not set, the default value above is used.
-	-- in future, examination of other node properties
-	-- (such as fluids) could be possible.
-	return def.surface_friction or default
+	-- inspect the definition to see if it deines surface_friction
+	local d = def.surface_friction
+	if d then return d end
+
+	-- walkable defines if entities will collide,
+	-- so if this is explicitly set to false then assume no friction
+	if def.walkable == false then return 0 end
+
+	-- nothing else? fall back to default
+	return default
 end
 
 
