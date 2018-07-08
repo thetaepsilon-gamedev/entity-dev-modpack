@@ -3,8 +3,17 @@ Implementation functions for cbox_grind (see appropriate lua file)
 which do the calculations for surface friction.
 ]]
 local mk_sampler = mtrequire("ds2.minetest.drag_physics.cbox_grind")
-local m_util = mtrequire("ds2.minetest.drag_physics.cbox_grind_util")
-local mkcube = m_util.mkcube_collect
+
+-- cube sampling function:
+-- for surface friction, both faces along an axis will always be added anyway.
+-- so just do it here to save some time and table inserts.
+local mkcube = function(sxmin, symin, szmin, sxmax, symax, szmax)
+	return {
+		fx = sxmin + sxmax,
+		fy = symin + symax,
+		fz = szmin + szmax,
+	}
+end
 
 -- the getnode sampling defers to another function to read the friction value
 -- (this is MT-specific so not configured here).
