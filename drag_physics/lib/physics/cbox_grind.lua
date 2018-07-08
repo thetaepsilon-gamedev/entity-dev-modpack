@@ -53,6 +53,16 @@ local facemap = {
 local sample_grind_face = function(mk, getnode, face, protrude, amin, amax, bmin, bmax)
 	local mapf = facemap[face]
 	local get = function(face, sign, ...) return getnode(face, sign, mapf(...)) end
+
+	-- we actually contract the coordinates slightly inside the face corners.
+	-- the reason for this is that MT sometimes gives unexpected results
+	-- if the cbox corners exactly line up on the boundary between nodes.
+	local t = tiny
+	amin = amin + t
+	amax = amax - t
+	bmin = bmin + t
+	bmax = bmax - t
+
 	local albl = get(face, "--", protrude, amin, bmin)
 	local ahbl = get(face, "+-", protrude, amax, bmin)
 	local albh = get(face, "-+", protrude, amin, bmax)
