@@ -15,6 +15,8 @@ local mkcube_collect = function(sxmin, symin, szmin, sxmax, symax, szmax)
 	r.xmax = sxmax
 	r.ymax = symax
 	r.zmax = szmax
+
+	return r
 end
 i.mkcube_collect = mkcube_collect
 
