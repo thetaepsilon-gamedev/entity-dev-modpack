@@ -14,6 +14,14 @@ local abs_subtract = function(v, d)
 	end
 end
 local sub = abs_subtract
+
+-- a little utility below to avoid divide by zeroes and infinities cropping up.
+-- also incorporates velocity un-signing.
+local abs = math.abs
+local safediv = function(s, v)
+	return (v == 0) and 0 or s / abs(v)
+end
+
 -- scale is used to adjust the friction force based on the entity's weight,
 -- as well as the time step under question (e.g. 0.1 seconds for per-tick).
 -- ef is "entity friction", the friction value of the entity being slowed.
@@ -22,9 +30,11 @@ local push_towards_zero_mut = function(velocity, friction, ef, scale)
 	local v, f, s = velocity, friction, scale
 	-- motion along each axis is slowed by friction on the other two.
 	-- e.g. Y-axis motion can be slowed by friction on the X and Z sides.
-	local x = sub(v.x, ((f.fy + f.fz) * ef) * s)
-	local y = sub(v.y, ((f.fx + f.fz) * ef) * s)
-	local z = sub(v.z, ((f.fx + f.fy) * ef) * s)
+	-- slowdown is also proportional to current velocity.
+	-- this should really in future also take into account normal force...
+	local x = sub(v.x, ((f.fy + f.fz) * ef) * safediv(s, v.x))
+	local y = sub(v.y, ((f.fx + f.fz) * ef) * safediv(s, v.y))
+	local z = sub(v.z, ((f.fx + f.fy) * ef) * safediv(s, v.z))
 	v.x = x
 	v.y = y
 	v.z = z
@@ -34,10 +44,11 @@ end
 -- get entity friction and scale based on properties and step dtime.
 local def_ef = 50	-- TODO: make configurable?
 local def_weight = 5	-- not sure if the API doc's example is the true value for this
+local tweak = 30	-- value played around with during development
 local get_scales = function(props, dtime)
 	local ef = props.friction_surface or def_ef
 	local weight = props.weight or def_weight
-	local scale = dtime / weight
+	local scale = (dtime / weight) * tweak
 	return ef, scale
 end
 
