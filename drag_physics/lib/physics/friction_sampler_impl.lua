@@ -12,6 +12,13 @@ local mkcube = function(sxmin, symin, szmin, sxmax, symax, szmax)
 		fx = sxmin + sxmax,
 		fy = symin + symax,
 		fz = szmin + szmax,
+		-- extended per-face properties, mostly used in kickoff behaviour
+		fxmin = sxmin,
+		fxmax = sxmax,
+		fymin = symin,
+		fymax = symax,
+		fzmin = szmin,
+		fzmax = szmax,
 	}
 end
 
