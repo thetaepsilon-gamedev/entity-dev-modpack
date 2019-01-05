@@ -41,6 +41,57 @@ local push_towards_zero_mut = function(velocity, friction, ef, scale)
 	return v
 end
 
+
+
+
+
+-- yet more heuristics...
+-- there previously was a "stuck entity" problem,
+-- where entities took a REAAAAAALY long time to fall down against a wall.
+-- this is due to a lack of consideration for normal force.
+-- to counter this, moving really fast against a wall will push you away from it;
+-- this way, gravity along a flat plane still counters it,
+-- but eventually the entity will move away from a vertical wall.
+-- the exception is in tight spaces barely big enough for an entity;
+-- in that case the entity will slowly slide down as before.
+local sqrt = math.sqrt
+local vel2d = function(a, b)
+	return sqrt((a*a) + (b*b))
+end
+local kick_tweak = 0.001
+local wall_unstick_mut = function(vel, friction)
+	local vx, vy, vz = vel.x, vel.y, vel.z
+	-- movement lateral to each axis.
+	-- e.g. moving fast against a rough surface in x/z will cause Y kick-off;
+	-- imagine being lifted up by small bumps.
+	local lx = vel2d(vy, vz)
+	local ly = vel2d(vx, vz)
+	local lz = vel2d(vy, vz)
+
+	-- per-face kick-off.
+	-- positive direction of each face kicks downwards in that axis.
+	local t = kick_tweak
+	local kxmin = t * lx * friction.fxmin
+	local kxmax = t * lx * friction.fxmax
+	local kymin = t * ly * friction.fymin
+	local kymax = t * ly * friction.fymax
+	local kzmin = t * lz * friction.fzmin
+	local kzmax = t * lz * friction.fzmax
+
+	local dx = kxmin - kxmax
+	local dy = kymin - kymax
+	local dz = kzmin - kzmax
+
+	vel.x = vx + dx
+	vel.y = vy + dy
+	vel.z = vz + dz
+	return vel
+end
+
+
+
+
+
 -- get entity friction and scale based on properties and step dtime.
 local def_ef = 50	-- TODO: make configurable?
 local def_weight = 5	-- not sure if the API doc's example is the true value for this
@@ -59,6 +110,7 @@ local apply = function(dtime, entity, props, frictionf)
 	local ef, scale = get_scales(props, dtime)
 	local vel = entity:get_velocity()
 	local friction = frictionf(entity:get_pos(), props.collisionbox)
+	wall_unstick_mut(vel, friction)
 	push_towards_zero_mut(vel, friction, ef, scale)
 	entity:set_velocity(vel)
 	return vel
