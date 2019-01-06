@@ -1,6 +1,7 @@
 --[[
 Apply surface friction to an entity, given the friction values on each axis.
 ]]
+local vadd = mtrequire("ds2.minetest.vectorextras.add").raw
 
 -- applying friction isn't just a normal subtract,
 -- but rather the force opposes the direction of motion.
@@ -26,7 +27,7 @@ end
 -- as well as the time step under question (e.g. 0.1 seconds for per-tick).
 -- ef is "entity friction", the friction value of the entity being slowed.
 -- it doesn't have axes because to do so would have to consider friction etc.
-local push_towards_zero_mut = function(velocity, friction, ef, scale)
+local push_towards_zero = function(velocity, friction, ef, scale)
 	local v, f, s = velocity, friction, scale
 	-- motion along each axis is slowed by friction on the other two.
 	-- e.g. Y-axis motion can be slowed by friction on the X and Z sides.
@@ -35,10 +36,7 @@ local push_towards_zero_mut = function(velocity, friction, ef, scale)
 	local x = sub(v.x, ((f.fy + f.fz) * ef) * safediv(s, v.x))
 	local y = sub(v.y, ((f.fx + f.fz) * ef) * safediv(s, v.y))
 	local z = sub(v.z, ((f.fx + f.fy) * ef) * safediv(s, v.z))
-	v.x = x
-	v.y = y
-	v.z = z
-	return v
+	return x, y, z
 end
 
 
@@ -59,7 +57,7 @@ local vel2d = function(a, b)
 	return sqrt((a*a) + (b*b))
 end
 local kick_tweak = 0.001
-local wall_unstick_mut = function(vel, friction)
+local wall_unstick = function(vel, friction)
 	local vx, vy, vz = vel.x, vel.y, vel.z
 	-- movement lateral to each axis.
 	-- e.g. moving fast against a rough surface in x/z will cause Y kick-off;
@@ -82,10 +80,7 @@ local wall_unstick_mut = function(vel, friction)
 	local dy = kymin - kymax
 	local dz = kzmin - kzmax
 
-	vel.x = vx + dx
-	vel.y = vy + dy
-	vel.z = vz + dz
-	return vel
+	return dx, dy, dz
 end
 
 
@@ -104,14 +99,22 @@ local get_scales = function(props, dtime)
 end
 
 local i = {}
+local update = function(v, vx, vy, vz)
+	v.x = vx
+	v.y = vy
+	v.z = vz
+end
 -- entity friction and weighting are retrieved from an already retrieved properties table.
 -- returns the modified velocity after applying to the entity.
 local apply = function(dtime, entity, props, frictionf)
 	local ef, scale = get_scales(props, dtime)
 	local vel = entity:get_velocity()
 	local friction = frictionf(entity:get_pos(), props.collisionbox)
-	wall_unstick_mut(vel, friction)
-	push_towards_zero_mut(vel, friction, ef, scale)
+	local dx, dy, dz = wall_unstick(vel, friction)
+	local rx, ry, rz = push_towards_zero(vel, friction, ef, scale)
+	local vx, vy, vz = vadd(rx, ry, rz, dx, dy, dz)
+
+	update(vel, vx, vy, vz)
 	entity:set_velocity(vel)
 	return vel
 end
