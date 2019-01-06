@@ -56,7 +56,8 @@ local sqrt = math.sqrt
 local vel2d = function(a, b)
 	return sqrt((a*a) + (b*b))
 end
-local kick_tweak = 0.001
+local kick_tweak = 0.01
+local kick_exponent = 0.01
 local wall_unstick = function(vel, friction)
 	local vx, vy, vz = vel.x, vel.y, vel.z
 	-- movement lateral to each axis.
@@ -69,12 +70,13 @@ local wall_unstick = function(vel, friction)
 	-- per-face kick-off.
 	-- positive direction of each face kicks downwards in that axis.
 	local t = kick_tweak
-	local kxmin = t * lx * friction.fxmin
-	local kxmax = t * lx * friction.fxmax
-	local kymin = t * ly * friction.fymin
-	local kymax = t * ly * friction.fymax
-	local kzmin = t * lz * friction.fzmin
-	local kzmax = t * lz * friction.fzmax
+	local e = kick_exponent
+	local kxmin = (t * lx * friction.fxmin) ^ e
+	local kxmax = (t * lx * friction.fxmax) ^ e
+	local kymin = (t * ly * friction.fymin) ^ e
+	local kymax = (t * ly * friction.fymax) ^ e
+	local kzmin = (t * lz * friction.fzmin) ^ e
+	local kzmax = (t * lz * friction.fzmax) ^ e
 
 	local dx = kxmin - kxmax
 	local dy = kymin - kymax
@@ -90,7 +92,7 @@ end
 -- get entity friction and scale based on properties and step dtime.
 local def_ef = 50	-- TODO: make configurable?
 local def_weight = 5	-- not sure if the API doc's example is the true value for this
-local tweak = 30	-- value played around with during development
+local tweak = 200	-- value played around with during development
 local get_scales = function(props, dtime)
 	local ef = props.friction_surface or def_ef
 	local weight = props.weight or def_weight
