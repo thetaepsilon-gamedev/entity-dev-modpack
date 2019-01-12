@@ -25,10 +25,10 @@ end
 -- the getnode sampling defers to another function to read the friction value
 -- (this is MT-specific so not configured here).
 -- the face and sign arguments are not relevant, as below they will be averaged.
-local mk_getnode = function(frictionf)
-	assert(type(frictionf) == "function")
+local mk_getnode = function(friction_at_point)
+	assert(type(friction_at_point) == "function")
 	return function(face, sign, x, y, z)
-		return frictionf(x, y, z)
+		return friction_at_point(x, y, z)
 	end
 end
 
@@ -43,10 +43,10 @@ local impl = {
 	mkface = mkface,
 	mkcube = mkcube,
 }
-local mk_sampler = function(frictionf)
-	impl.getnode = mk_getnode(frictionf)
+local mk_cbox_grind_friction_vector_sampler = function(friction_at_point)
+	impl.getnode = mk_getnode(friction_at_point)
 	return mk_cbox_sampler(impl)
 end
 
-return mk_sampler
+return mk_cbox_grind_friction_vector_sampler
 
