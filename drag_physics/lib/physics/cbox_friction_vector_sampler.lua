@@ -44,7 +44,12 @@ local impl = {
 	mkface = mkface,
 	mkcube = mkcube,
 }
-local mk_cbox_grind_friction_vector_sampler = function(friction_at_point)
+-- cube/face compose functions for extradata are optional,
+-- as they would incur wasteful table generation and GC pressure
+-- if the returned extradata was never used.
+local mk_cbox_grind_friction_vector_sampler = function(friction_at_point, mkxface, mkxcube)
+	impl.mk_extradata_face = mkxface
+	impl.mk_extradata_cube = mkxcube
 	impl.getnode = mk_getnode(friction_at_point)
 	return mk_cbox_sampler(impl)
 end
