@@ -1,8 +1,10 @@
 --[[
-An implementation of the frictionf needed for the friction cbox sampler
-(see friction_sampler_impl.lua),
-i.e. a function taking x/y/z coordinates and returning a friction value.
-This requires a function mapping x/y/z to just a node name,
+An implementation of the friction_at_point function,
+needed for the friction cbox sampler
+(see cbox_friction_vector_sampler.lua and cbox_grind.lua).
+this a function taking x/y/z coordinates and returning a friction value.
+This in turn requires a function mapping x/y/z to just a node name
+(e.g. wrap minetest.get_node in a function returning just .name),
 and a function which returns the definition table for that node name.
 (simplest implementation of this would be:
 function(n) return minetest.registered_nodes[n] end).
@@ -32,10 +34,11 @@ end
 
 
 
-local mk_frictionf = function(nsampler, nlookup)
+local mk_mt_friction_at_point = function(nsampler, nlookup)
 	assert(type(nsampler) == "function")
 	assert(type(nlookup) == "function")
-	return function(x, y, z)
+
+	local friction_at_point = function(x, y, z)
 		local n = nsampler(x, y, z)
 		local def = nlookup(n)
 		if def == nil then
@@ -44,9 +47,11 @@ local mk_frictionf = function(nsampler, nlookup)
 			return process_def(def)
 		end
 	end
+
+	return friction_at_point
 end
 
 
 
-return mk_frictionf
+return mk_mt_friction_at_point
 
