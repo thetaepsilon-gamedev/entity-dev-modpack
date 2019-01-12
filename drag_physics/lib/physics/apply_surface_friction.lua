@@ -23,6 +23,12 @@ local safediv = function(s, v)
 	return (v == 0) and 0 or s / abs(v)
 end
 
+
+
+
+
+
+
 -- scale is used to adjust the friction force based on the entity's weight,
 -- as well as the time step under question (e.g. 0.1 seconds for per-tick).
 -- ef is "entity friction", the friction value of the entity being slowed.
@@ -38,6 +44,8 @@ local push_towards_zero = function(velocity, friction, ef, scale)
 	local z = sub(v.z, ((f.fx + f.fy) * ef) * safediv(s, v.z))
 	return x, y, z
 end
+
+
 
 
 
@@ -89,6 +97,8 @@ end
 
 
 
+
+
 -- get entity friction and scale based on properties and step dtime.
 local def_ef = 50	-- TODO: make configurable?
 local def_weight = 5	-- not sure if the API doc's example is the true value for this
@@ -100,19 +110,29 @@ local get_scales = function(props, dtime)
 	return ef, scale
 end
 
+
+
+
+
+
+
 local i = {}
 local update = function(v, vx, vy, vz)
 	v.x = vx
 	v.y = vy
 	v.z = vz
 end
+
 -- entity friction and weighting are retrieved from an already retrieved properties table.
 -- returns the modified velocity after applying to the entity.
-local apply = function(dtime, entity, props, frictionf)
+local apply = function(dtime, entity, props, node_friction_sampler)
 	local ef, scale = get_scales(props, dtime)
 	local vel = entity:get_velocity()
+
 	-- fextra could be used for e.g. returning nodes that were touched.
-	local friction, fextra = frictionf(entity:get_pos(), props.collisionbox)
+	local friction, fextra =
+		node_friction_sampler(entity:get_pos(), props.collisionbox)
+
 	local dx, dy, dz = wall_unstick(vel, friction)
 	local rx, ry, rz = push_towards_zero(vel, friction, ef, scale)
 	local vx, vy, vz = vadd(rx, ry, rz, dx, dy, dz)
