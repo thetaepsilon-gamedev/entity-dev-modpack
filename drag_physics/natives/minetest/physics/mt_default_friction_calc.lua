@@ -2,7 +2,8 @@
 In minetest-specific code: provide definition lookup and node sampling,
 based on minetest.registered_nodes and .get_node(), respectively.
 ]]
-local mk_friction_at_point = mtrequire("ds2.minetest.drag_physics.friction_sampler_mt_def")
+local mk_friction_at_point =
+	mtrequire("ds2.minetest.drag_physics.friction_at_point_mt_world")
 local mk_sampler = mtrequire("ds2.minetest.drag_physics.cbox_friction_vector_sampler")
 
 -- throwaway allocations, whyyyyyy
