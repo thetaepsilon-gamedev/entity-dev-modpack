@@ -50,7 +50,7 @@ local facemap = {
 
 -- this thing has slightly too many arguments...
 -- work out the coordinates of a single protruded face and read data
-local sample_grind_face = function(mk, getnode, face, protrude, amin, amax, bmin, bmax)
+local sample_grind_face = function(mk, getnode, mk_extradata_face, face, protrude, amin, amax, bmin, bmax)
 	local mapf = facemap[face]
 	local get = function(face, sign, ...) return getnode(face, sign, mapf(...)) end
 
@@ -63,12 +63,27 @@ local sample_grind_face = function(mk, getnode, face, protrude, amin, amax, bmin
 	bmin = bmin + t
 	bmax = bmax - t
 
-	local albl = get(face, "--", protrude, amin, bmin)
-	local ahbl = get(face, "+-", protrude, amax, bmin)
-	local albh = get(face, "-+", protrude, amin, bmax)
-	local ahbh = get(face, "++", protrude, amax, bmax)
-	return mk(face, albl, ahbl, albh, ahbh)
+	-- x* variables are extradata.
+	-- a and b refer to a and b axes (which vary depending on the face,
+	-- e.g. for Y+/- faces they would be x and z).
+	-- l and h refer to lower and higher along the preceding axis.
+	local albl, xalbl = get(face, "--", protrude, amin, bmin)
+	local ahbl, xahbl = get(face, "+-", protrude, amax, bmin)
+	local albh, xalbh = get(face, "-+", protrude, amin, bmax)
+	local ahbh, xahbh = get(face, "++", protrude, amax, bmax)
+
+	local friction_face = mk(face, albl, ahbl, albh, ahbh)
+	local extradata_face =
+		mk_extradata_face(face, xalbl, xahbl, xalbh, xahbh)
+
+	return friction_face, extradata_face
 end
+
+
+
+
+
+
 
 --[[
 cbox is in usual MT format,
@@ -78,7 +93,9 @@ The ordering of min/max relative to each other is NOT checked.
 The funcs table provides functions to sample the desired data at a given point,
 as well as to compose the desired resulting structure.
 ]]
+local nilfunc = function() return nil end
 local mk_contact_point_grind_sampler = function(funcs)
+	-- composers for the returned friction data.
 	local getnode = funcs.getnode
 	assert(type(getnode) == "function")
 	local mkface = funcs.mkface
@@ -86,9 +103,23 @@ local mk_contact_point_grind_sampler = function(funcs)
 	local mkcube = funcs.mkcube
 	assert(type(mkcube) == "function")
 
-	local m, g = mkface, getnode
+	-- same but for extradata, if any.
+	-- mk_extradata_face is called with a face identifier
+	-- (see below in the s(...) calls) and extradata for the four corners;
+	-- for the corner ordering see above in sample_grind_face().
+	local mkxface = funcs.mk_extradata_face or nilfunc
+	-- mk_extradata_cube is called with the six extradata faces,
+	-- where the "extradata faces" are whatever mk_extradata_face() returns.
+	-- the ordering of these faces is like that of minetest collision boxes;
+	-- see e.g. the call to mkcube() near the end of the function below.
+	local mkxcube = funcs.mk_extradata_cube or nilfunc
+	assert(type(mkxface) == "function")
+	assert(type(mkxcube) == "function")
+
+
+	local m, g, x = mkface, getnode, mkxface
 	local s = function(...)
-		return sample_grind_face(m, g, ...)
+		return sample_grind_face(m, g, x, ...)
 	end
 
 	return function(bpos, cbox)
@@ -99,17 +130,19 @@ local mk_contact_point_grind_sampler = function(funcs)
 		local protrude
 
 		local t = tiny
-		local sxmin = s("xmin", xmin - t, ymin, ymax, zmin, zmax)
-		local sxmax = s("xmax", xmax + t, ymin, ymax, zmin, zmax)
-		local symin = s("ymin", ymin - t, xmin, xmax, zmin, zmax)
-		local symax = s("ymax", ymax + t, xmin, xmax, zmin, zmax)
-		local szmin = s("zmin", zmin - t, xmin, xmax, ymin, ymax)
-		local szmax = s("zmax", zmax + t, xmin, xmax, ymin, ymax)
+		local sxmin, exmin = s("xmin", xmin - t, ymin, ymax, zmin, zmax)
+		local sxmax, exmax = s("xmax", xmax + t, ymin, ymax, zmin, zmax)
+		local symin, eymin = s("ymin", ymin - t, xmin, xmax, zmin, zmax)
+		local symax, eymax = s("ymax", ymax + t, xmin, xmax, zmin, zmax)
+		local szmin, ezmin = s("zmin", zmin - t, xmin, xmax, ymin, ymax)
+		local szmax, ezmax = s("zmax", zmax + t, xmin, xmax, ymin, ymax)
 
 		-- preserve cbox-like ordering
 		local friction_data =
 			mkcube(sxmin, symin, szmin, sxmax, symax, szmax)
-		return friction_data
+		local extradata_cube =
+			mkxcube(exmin, eymin, ezmin, exmax, eymax, ezmax)
+		return friction_data, extradata_cube
 	end
 end
 
