@@ -41,11 +41,14 @@ local mk_mt_friction_at_point = function(nsampler, nlookup)
 	local friction_at_point = function(x, y, z)
 		local n = nsampler(x, y, z)
 		local def = nlookup(n)
+
+		local friction
 		if def == nil then
-			return 0
+			friction = 0
 		else
-			return process_def(def)
+			friction = process_def(def)
 		end
+		return friction
 	end
 
 	return friction_at_point
