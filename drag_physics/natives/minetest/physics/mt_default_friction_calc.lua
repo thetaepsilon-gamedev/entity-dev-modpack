@@ -23,5 +23,11 @@ local minetest_friction_at_point = mk_friction_at_point(getnodename, nlookup)
 
 local i = {}
 i.friction_sampler = mk_sampler(minetest_friction_at_point)
+
+-- variant allowing utilisation of extradata composers.
+i.mk_sampler_with_extradata = function(mkxface, mkxcube)
+	return mk_sampler(minetest_friction_at_point, mkxface, mkxcube)
+end
+
 return i
 
