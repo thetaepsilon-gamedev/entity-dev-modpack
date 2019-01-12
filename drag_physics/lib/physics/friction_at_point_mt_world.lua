@@ -24,6 +24,14 @@ local process_def = function(def)
 	local d = def.surface_friction
 	if d then return d end
 
+	-- liquids have a lower than average drag.
+	-- this doesn't really simulate how fluids behave,
+	-- but it's close enough for this.
+	local l = def.liquidtype
+	if (l == "source") or (l == "flowing") then
+		return 10
+	end
+
 	-- walkable defines if entities will collide,
 	-- so if this is explicitly set to false then assume no friction
 	if def.walkable == false then return 0 end
