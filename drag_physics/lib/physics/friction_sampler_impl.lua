@@ -2,7 +2,7 @@
 Implementation functions for cbox_grind (see appropriate lua file)
 which do the calculations for surface friction.
 ]]
-local mk_sampler = mtrequire("ds2.minetest.drag_physics.cbox_grind")
+local mk_cbox_sampler = mtrequire("ds2.minetest.drag_physics.cbox_grind")
 
 -- cube sampling function:
 -- for surface friction, both faces along an axis will always be added anyway.
@@ -45,7 +45,7 @@ local impl = {
 }
 local mk_sampler = function(frictionf)
 	impl.getnode = mk_getnode(frictionf)
-	return mk_sampler(impl)
+	return mk_cbox_sampler(impl)
 end
 
 return mk_sampler
