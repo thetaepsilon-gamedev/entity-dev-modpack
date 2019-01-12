@@ -78,7 +78,7 @@ The ordering of min/max relative to each other is NOT checked.
 The funcs table provides functions to sample the desired data at a given point,
 as well as to compose the desired resulting structure.
 ]]
-local sample_grind_points = function(funcs)
+local mk_contact_point_grind_sampler = function(funcs)
 	local getnode = funcs.getnode
 	assert(type(getnode) == "function")
 	local mkface = funcs.mkface
@@ -107,9 +107,11 @@ local sample_grind_points = function(funcs)
 		local szmax = s("zmax", zmax + t, xmin, xmax, ymin, ymax)
 
 		-- preserve cbox-like ordering
-		return mkcube(sxmin, symin, szmin, sxmax, symax, szmax)
+		local friction_data =
+			mkcube(sxmin, symin, szmin, sxmax, symax, szmax)
+		return friction_data
 	end
 end
 
-return sample_grind_points
+return mk_contact_point_grind_sampler
 
