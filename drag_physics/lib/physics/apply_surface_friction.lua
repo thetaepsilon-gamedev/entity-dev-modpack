@@ -111,14 +111,15 @@ end
 local apply = function(dtime, entity, props, frictionf)
 	local ef, scale = get_scales(props, dtime)
 	local vel = entity:get_velocity()
-	local friction = frictionf(entity:get_pos(), props.collisionbox)
+	-- fextra could be used for e.g. returning nodes that were touched.
+	local friction, fextra = frictionf(entity:get_pos(), props.collisionbox)
 	local dx, dy, dz = wall_unstick(vel, friction)
 	local rx, ry, rz = push_towards_zero(vel, friction, ef, scale)
 	local vx, vy, vz = vadd(rx, ry, rz, dx, dy, dz)
 
 	update(vel, vx, vy, vz)
 	entity:set_velocity(vel)
-	return vel
+	return vel, fextra
 end
 i.apply = apply
 
