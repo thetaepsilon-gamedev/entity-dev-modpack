@@ -48,7 +48,7 @@ local mk_mt_friction_at_point = function(nsampler, nlookup)
 		else
 			friction = process_def(def)
 		end
-		return friction
+		return friction, def
 	end
 
 	return friction_at_point
