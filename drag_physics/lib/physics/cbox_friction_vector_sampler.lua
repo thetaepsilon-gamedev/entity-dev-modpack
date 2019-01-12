@@ -28,7 +28,8 @@ end
 local mk_getnode = function(friction_at_point)
 	assert(type(friction_at_point) == "function")
 	return function(face, sign, x, y, z)
-		return friction_at_point(x, y, z)
+		local friction, extradata = friction_at_point(x, y, z)
+		return friction, extradata
 	end
 end
 
