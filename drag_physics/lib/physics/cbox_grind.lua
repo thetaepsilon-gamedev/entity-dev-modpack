@@ -130,12 +130,22 @@ local mk_contact_point_grind_sampler = function(funcs)
 		local protrude
 
 		local t = tiny
-		local sxmin, exmin = s("xmin", xmin - t, ymin, ymax, zmin, zmax)
-		local sxmax, exmax = s("xmax", xmax + t, ymin, ymax, zmin, zmax)
-		local symin, eymin = s("ymin", ymin - t, xmin, xmax, zmin, zmax)
-		local symax, eymax = s("ymax", ymax + t, xmin, xmax, zmin, zmax)
-		local szmin, ezmin = s("zmin", zmin - t, xmin, xmax, ymin, ymax)
-		local szmax, ezmax = s("zmax", zmax + t, xmin, xmax, ymin, ymax)
+		-- note that the corners are also shrunk in slightly on the protuded face.
+		-- this is to avoid catching in weird ways on top of surfaces.
+		local h = tiny
+		local hxmin = xmin + h
+		local hymin = ymin + h
+		local hzmin = zmin + h
+		local hxmax = xmax - h
+		local hymax = ymax - h
+		local hzmax = zmax - h
+
+		local sxmin, exmin = s("xmin", xmin - t, hymin, hymax, hzmin, hzmax)
+		local sxmax, exmax = s("xmax", xmax + t, hymin, hymax, hzmin, hzmax)
+		local symin, eymin = s("ymin", ymin - t, hxmin, hxmax, hzmin, hzmax)
+		local symax, eymax = s("ymax", ymax + t, hxmin, hxmax, hzmin, hzmax)
+		local szmin, ezmin = s("zmin", zmin - t, hxmin, hxmax, hymin, hymax)
+		local szmax, ezmax = s("zmax", zmax + t, hxmin, hxmax, hymin, hymax)
 
 		-- preserve cbox-like ordering
 		local friction_data =
