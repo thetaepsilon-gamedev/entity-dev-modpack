@@ -33,8 +33,8 @@ local process_def = function(def)
 	end
 
 	-- walkable defines if entities will collide,
-	-- so if this is explicitly set to false then assume no friction
-	if def.walkable == false then return 0 end
+	-- so if this is explicitly set to false then assume air-like friction
+	if def.walkable == false then return 0.02 end
 
 	-- nothing else? fall back to default
 	return default
